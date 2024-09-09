@@ -8,7 +8,7 @@ R="\e[31m"
 G="\e[32m"
 Y="\e[33m"
 N="\e[0m"
-echo "Enter DB password: "
+echo "Please enter DB password:"
 read -s mysql_root_password
 
 VALIDATE(){
@@ -29,20 +29,21 @@ else
     echo "You are super user."
 fi
 
-dnf install mysql-server -y&>>$LOGFILE
-VALIDATE $? "Installing MySQL"
+
+dnf install mysql-server -y &>>$LOGFILE
+VALIDATE $? "Installing MySQL Server"
 
 systemctl enable mysqld &>>$LOGFILE
-VALIDATE $? "Enabling the mysql server"
+VALIDATE $? "Enabling MySQL Server"
 
-systemctl start mysqld &>>LOGFILE
-VALIDATE $? "Starting the mysql server"
+systemctl start mysqld &>>$LOGFILE
+VALIDATE $? "Starting MySQL Server"
 
-# mysql_secure_installation --set-root-pass ExpenseApp@1 &>>LOGFILE
-# VALIDATE $? "Setting up the root password"
+# mysql_secure_installation --set-root-pass ExpenseApp@1 &>>$LOGFILE
+# VALIDATE $? "Setting up root password"
 
-
-mysql -h db.daws78s.fun -uroot -p${mysql_root_password} -e 'show databases;' &>>$LOGFILE
+#Below code will be useful for idempotent nature
+mysql -h db.daws78s.online -uroot -p${mysql_root_password} -e 'show databases;' &>>$LOGFILE
 if [ $? -ne 0 ]
 then
     mysql_secure_installation --set-root-pass ${mysql_root_password} &>>$LOGFILE
