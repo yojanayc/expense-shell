@@ -29,29 +29,28 @@ else
     echo "You are super user."
 fi
 
+dnf module disable nodejs -y &>>$LOGFILE
+VALIDATE $? "Disabling default nodejs"
 
-dnf module disable nodejs -y &>>LOGFILE
-VALIDATE $? "Disable nodejs module"
+dnf module enable nodejs:20 -y &>>$LOGFILE
+VALIDATE $? "Enabling nodejs:20 version"
 
-dnf module enable nodejs:20 -y &>>LOGFILE
-VALIDATE $? "Enable nodejs module"
+dnf install nodejs -y &>>$LOGFILE
+VALIDATE $? "Installing nodejs"
 
-dnf install nodejs -y &>>LOGFILE
-VALIDATE $? "Install nodejs module"
-
-id expense &>>LOGFILE
+id expense &>>$LOGFILE
 if [ $? -ne 0 ]
-then 
-    useradd expense &>>LOGFILE
+then
+    useradd expense &>>$LOGFILE
     VALIDATE $? "Creating expense user"
 else
     echo -e "Expense user already created...$Y SKIPPING $N"
 fi
 
-mkdir /app &>>LOGFILE
-VALIDATE $? "Creating APP directory"
+mkdir -p /app &>>$LOGFILE
+VALIDATE $? "Creating app directory"
 
-curl -o /tmp/backend.zip https://expense-builds.s3.us-east-1.amazonaws.com/expense-backend-v2.zip
+curl -o /tmp/backend.zip https://expense-builds.s3.us-east-1.amazonaws.com/expense-backend-v2.zip &>>$LOGFILE
 VALIDATE $? "Downloading backend code"
 
 cd /app
@@ -78,7 +77,7 @@ VALIDATE $? "Enabling backend"
 dnf install mysql -y &>>$LOGFILE
 VALIDATE $? "Installing MySQL Client"
 
-mysql -h mysql.daws78s.fun -uroot -p${mysql_root_password} < /app/schema/backend.sql &>>$LOGFILE
+mysql -h db.daws78s.fun -uroot -p${mysql_root_password} < /app/schema/backend.sql &>>$LOGFILE
 VALIDATE $? "Schema loading"
 
 systemctl restart backend &>>$LOGFILE
